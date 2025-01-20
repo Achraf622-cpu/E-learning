@@ -1,26 +1,35 @@
 <?php
 
-class Human {
-    protected $id;
-    protected $name;
+abstract class User {
+
+    protected $user_id;
+    protected $username;
+    protected $role_id;
     protected $email;
+    protected $password;
 
-    public function __construct($id, $name, $email) {
-        $this->id = $id;
-        $this->name = $name;
-        $this->email = $email;
+ 
+    abstract public function loadUserData(): string;
+
+   
+    public function getUserRole(): int {
+        return $this->role_id;
     }
 
-    public function getId() {
-        return $this->id;
+
+    public function getUserId(): int {
+        return $this->user_id;
     }
 
-    public function getName() {
-        return $this->name;
+    public function getUsername(): string {
+        return $this->username;
     }
 
-    public function getEmail() {
+    public function getEmail(): string {
         return $this->email;
     }
+
+    public function getPassword(): string {
+        return $this->password;
+    }
 }
-?>

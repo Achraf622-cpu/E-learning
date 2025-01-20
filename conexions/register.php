@@ -11,7 +11,7 @@ class Register {
         $this->conn = $conn;
     }
 
-    public function registerUser($username, $email, $password) {
+    public function registerUser($username, $email, $password, $role) {
         // Check if the email already exists
         $stmt = $this->conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
@@ -22,8 +22,18 @@ class Register {
         // Hash the password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Set the default role to 'user' (role id = 1)
-        $default_role_id = 1; // '1' is for 'user' role
+        // If the role is "enseignant," insert into approval_requests table
+        if ($role == 'enseignant') {
+            $stmt = $this->conn->prepare("INSERT INTO approval_requests (username, email) VALUES (?, ?)");
+            if ($stmt->execute([$username, $email])) {
+                return "Your registration is pending admin approval.";
+            } else {
+                return "Error processing your request. Please try again.";
+            }
+        }
+
+        // Set the default role to 'student' (role id = 2 for student)
+        $default_role_id = 2; // '2' is for 'student' role
 
         // Insert user into the database
         $stmt = $this->conn->prepare("INSERT INTO users (username, email, password, id_role) VALUES (?, ?, ?, ?)");
@@ -33,7 +43,7 @@ class Register {
             // Store user info in session
             $_SESSION['user_id'] = $user_id;
             $_SESSION['username'] = $username;
-            $_SESSION['role'] = 'user';
+            $_SESSION['role'] = 'student';
 
             // Redirect to the profile page
             header("Location: ../Profile/profile.php");
@@ -50,10 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
+    $role = $_POST['role']; // Get the role from the form
 
     if (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password) && !empty($username)) {
         $register = new Register($conn);
-        $error_message = $register->registerUser($username, $email, $password);
+        $error_message = $register->registerUser($username, $email, $password, $role);
     } else {
         $error_message = "Please fill in all fields correctly.";
     }
@@ -94,6 +105,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="password" class="block text-gray-700 font-medium">Password</label>
                     <input type="password" name="password" id="password" required 
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="role" class="block text-gray-700 font-medium">Select Role</label>
+                    <select name="role" id="role" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="student">Student</option>
+                        <option value="enseignant">Enseignant</option>
+                    </select>
                 </div>
 
                 <button type="submit" 
