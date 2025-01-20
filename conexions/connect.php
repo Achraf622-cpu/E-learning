@@ -2,7 +2,7 @@
 $host = '127.0.0.1';
 $user = 'root';
 $pass = 'password';
-$database = 'OOP';
+$database = 'elearn';
 
 try {
     $conn = new PDO("mysql:host={$host};dbname={$database}", $user, $pass);
