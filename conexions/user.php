@@ -1,6 +1,6 @@
 <?php
 // Enseignant.php
-require_once 'User.php';  // Assuming User is your abstract parent class
+require_once 'human.php';  // Assuming User is your abstract parent class
 
 class Enseignant extends User {
     private $conn;

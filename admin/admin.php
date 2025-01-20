@@ -1,32 +1,36 @@
 <?php
-require '../conexions/connect.php'; // Ensure this file provides $conn
+require '../conexions/connect.php'; 
+require '../conexions/admin.php'; 
+
 session_start();
 
+// Verify the admin role
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../conexions/login.php");
     exit;
 }
 
-if (isset($_GET['make_admin'])) {
-    $user_id_to_promote = intval($_GET['make_admin']);
-    $stmt = $conn->prepare("UPDATE users SET id_role = (SELECT id FROM roles WHERE name = 'admin') WHERE id = ?");
-    $stmt->execute([$user_id_to_promote]);
+// Initialize the Admin class with the provided PDO connection
+$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $_SESSION['email'], $conn);
+
+// Handle actions using the new Admin class
+if (isset($_GET['promote'])) {
+    $user_id = intval($_GET['promote']);
+    $admin->activateUser($user_id); // Activate user (could be promoting to admin if needed)
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
-if (isset($_GET['make_user'])) {
-    $user_id_to_demote = intval($_GET['make_user']);
-    $stmt = $conn->prepare("UPDATE users SET id_role = (SELECT id FROM roles WHERE name = 'user') WHERE id = ?");
-    $stmt->execute([$user_id_to_demote]);
+if (isset($_GET['demote'])) {
+    $user_id = intval($_GET['demote']);
+    $admin->suspendUser($user_id); // Suspend user (could be demoting to user if needed)
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
-if (isset($_GET['ban_user'])) {
-    $user_id_to_ban = intval($_GET['ban_user']);
-    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-    $stmt->execute([$user_id_to_ban]);
+if (isset($_GET['ban'])) {
+    $user_id = intval($_GET['ban']);
+    $admin->deleteUser($user_id); // Delete user (assuming banning means deleting)
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -61,39 +65,42 @@ if (isset($_GET['ban_user'])) {
     <main class="w-3/4 p-8 bg-gradient-to-br from-white via-green-100 to-green-200 shadow-lg">
         <div class="text-center mb-10">
             <h1 class="text-5xl font-extrabold text-green-600 mb-4">Manage Users</h1>
-            <p class="text-lg text-gray-600">Promote users to admins, demote admins to users, or ban users from the platform</p>
+            <p class="text-lg text-gray-600">Promote, demote, or ban users with ease</p>
         </div>
 
         <!-- User List -->
         <div class="grid grid-cols-1 gap-6">
             <?php
-            $stmt = $conn->prepare("SELECT u.id, u.username, u.email, r.name AS role 
-                                    FROM users u 
-                                    JOIN roles r ON u.id_role = r.id");
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Fetch all users using the new class
+            $users = $admin->getAllUsers();
 
-            if ($result) {
-                foreach ($result as $row) {
+            if ($users) {
+                foreach ($users as $user) {
                     ?>
                     <div class="relative bg-white p-6 rounded-lg shadow-lg border border-green-300">
-                        <h3 class="text-2xl font-bold text-green-600 mb-2"><?php echo htmlspecialchars($row['username']); ?></h3>
-                        <p class="text-gray-700 mb-2">Email: <?php echo htmlspecialchars($row['email']); ?></p>
-                        <p class="text-gray-600 mb-4">Role: <?php echo htmlspecialchars($row['role']); ?></p>
+                        <h3 class="text-2xl font-bold text-green-600 mb-2"><?php echo htmlspecialchars($user['username']); ?></h3>
+                        <p class="text-gray-700 mb-2">Email: <?php echo htmlspecialchars($user['email']); ?></p>
+                        <p class="text-gray-600 mb-4">Role: <?php echo htmlspecialchars($user['role']); ?></p>
 
-                        <div class="flex space-x-4">
-                            <?php if ($row['role'] === 'user') { ?>
-                                <a href="?make_admin=<?php echo $row['id']; ?>"
+                        <div class="flex space-x-4 mt-4">
+                            <!-- Promote Button: Only visible if the user is not already an admin -->
+                            <?php if ($user['role'] === 'user') { ?>
+                                <a href="?promote=<?php echo $user['id']; ?>"
                                    class="bg-green-500 hover:bg-green-600 text-white text-sm py-2 px-4 rounded-md transition duration-300">
-                                    Make Admin
-                                </a>
-                            <?php } elseif ($row['role'] === 'admin') { ?>
-                                <a href="?make_user=<?php echo $row['id']; ?>"
-                                   class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-2 px-4 rounded-md transition duration-300">
-                                    Make User
+                                    Promote to Admin
                                 </a>
                             <?php } ?>
-                            <a href="?ban_user=<?php echo $row['id']; ?>"
+
+                            <!-- Demote Button: Only visible if the user is an admin -->
+                            <?php if ($user['role'] === 'admin') { ?>
+                                <a href="?demote=<?php echo $user['id']; ?>"
+                                   class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm py-2 px-4 rounded-md transition duration-300">
+                                    Demote to User
+                                </a>
+                            <?php } ?>
+
+                            <!-- Ban Button: Visible for all roles, allows banning any user -->
+                            <a href="?ban=<?php echo $user['id']; ?>"
                                class="bg-red-500 hover:bg-red-600 text-white text-sm py-2 px-4 rounded-md transition duration-300"
                                onclick="return confirm('Are you sure you want to ban this user?');">
                                 Ban User
