@@ -5,6 +5,7 @@ class Register extends Connection {
 
     public function registerUser($username, $email, $password, $role) {
 
+        // Check if the email already exists
         $stmt = $this->conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->fetch()) {
@@ -14,28 +15,35 @@ class Register extends Connection {
         // Hash the password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // If the role is "enseignant," insert into approval_requests table
+        // Insert user into the database first to get user_id
+        $stmt = $this->conn->prepare("INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)");
+        
+        
         if ($role == 'enseignant') {
-            $stmt = $this->conn->prepare("INSERT INTO approval_requests (username, email) VALUES (?, ?)");
-            if ($stmt->execute([$username, $email])) {
-                return "Your registration is pending admin approval.";
-            } else {
-                return "Error processing your request. Please try again.";
-            }
+            $role_id = 1; 
+        } elseif ($role == 'admin') {
+            $role_id = 2; 
+        } else {
+            $role_id = 3; 
         }
 
-        // Set the default role to 'student' (role id = 3 for student)
-        $default_role_id = 3; // '3' is for 'student' role
-
-        // Insert user into the database
-        $stmt = $this->conn->prepare("INSERT INTO users (username, email, password, id_role) VALUES (?, ?, ?, ?)");
-        if ($stmt->execute([$username, $email, $hashed_password, $default_role_id])) {
+        if ($stmt->execute([$username, $email, $hashed_password, $role_id])) {
             $user_id = $this->conn->lastInsertId();
+
+            // If the role is "enseignant", insert into approval_requests table
+            if ($role == 'enseignant') {
+                $stmt = $this->conn->prepare("INSERT INTO approval_requests (user_id, status) VALUES (?, 'pending')");
+                if ($stmt->execute([$user_id])) {
+                    return "Your registration is pending admin approval.";
+                } else {
+                    return "Error processing your request. Please try again.";
+                }
+            }
 
             // Store user info in session
             $_SESSION['user_id'] = $user_id;
             $_SESSION['username'] = $username;
-            $_SESSION['role'] = 'student';
+            $_SESSION['role'] = $role;
 
             // Redirect to the profile page
             header("Location: ../Profile/profile.php");

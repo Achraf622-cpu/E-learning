@@ -1,38 +1,6 @@
 <?php
-require 'connect.php'; 
+require 'logi.php'; 
 session_start();
-
-class Login {
-    private $conn;
-
-    public function __construct($conn) {
-        $this->conn = $conn;
-    }
-
-    public function authenticate($email, $password) {
-        // Get user info along with the role
-        $stmt = $this->conn->prepare("SELECT u.id, u.password, u.username, r.name FROM users u JOIN roles r ON u.id_role = r.id WHERE u.email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['name'];
-            $_SESSION['username'] = $user['username'];
-
-            // Redirect based on the role
-            if ($user['name'] === 'admin') {
-                header("Location: ../admin/admin.php");
-                exit;
-            } else {
-                header("Location: ../Profile/profile.php");
-                exit;
-            }
-        } else {
-            return "Invalid email or password.";
-        }
-    }
-}
 
 $error_message = "";
 
@@ -41,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
 
     if (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password)) {
-        $login = new Login($conn);
+        $login = new Login();  // No need to pass $conn because it's now handled by the Login class
         $error_message = $login->authenticate($email, $password);
     } else {
         $error_message = "Please enter a valid email and password.";
