@@ -1,58 +1,7 @@
 <?php
-require 'connect.php'; 
-require 'Human.php';
-require 'User.php';  
+require 'regi.php';  // Include the Register class
+
 session_start();
-
-class Register {
-    private $conn;
-
-    public function __construct($conn) {
-        $this->conn = $conn;
-    }
-
-    public function registerUser($username, $email, $password, $role) {
-        // Check if the email already exists
-        $stmt = $this->conn->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        if ($stmt->fetch()) {
-            return "Email already in use.";
-        }
-
-        // Hash the password
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        // If the role is "enseignant," insert into approval_requests table
-        if ($role == 'enseignant') {
-            $stmt = $this->conn->prepare("INSERT INTO approval_requests (username, email) VALUES (?, ?)");
-            if ($stmt->execute([$username, $email])) {
-                return "Your registration is pending admin approval.";
-            } else {
-                return "Error processing your request. Please try again.";
-            }
-        }
-
-        // Set the default role to 'student' (role id = 2 for student)
-        $default_role_id = 2; // '2' is for 'student' role
-
-        // Insert user into the database
-        $stmt = $this->conn->prepare("INSERT INTO users (username, email, password, id_role) VALUES (?, ?, ?, ?)");
-        if ($stmt->execute([$username, $email, $hashed_password, $default_role_id])) {
-            $user_id = $this->conn->lastInsertId();
-
-            // Store user info in session
-            $_SESSION['user_id'] = $user_id;
-            $_SESSION['username'] = $username;
-            $_SESSION['role'] = 'student';
-
-            // Redirect to the profile page
-            header("Location: ../Profile/profile.php");
-            exit;
-        } else {
-            return "Error registering user. Please try again.";
-        }
-    }
-}
 
 $error_message = "";
 
@@ -60,16 +9,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
-    $role = $_POST['role']; // Get the role from the form
+    $role = $_POST['role'];
 
-    if (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password) && !empty($username)) {
-        $register = new Register($conn);
+    if ($role == 'admin') {
+        $error_message = "You cannot register as an admin directly.";
+    } elseif (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password) && !empty($username)) {
+        $register = new Register(); // No need to pass the connection
         $error_message = $register->registerUser($username, $email, $password, $role);
     } else {
         $error_message = "Please fill in all fields correctly.";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

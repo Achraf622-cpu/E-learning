@@ -1,13 +1,23 @@
-<?php
-$host = '127.0.0.1';
-$user = 'root';
-$pass = 'password';
-$database = 'elearn';
 
-try {
-    $conn = new PDO("mysql:host={$host};dbname={$database}", $user, $pass);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
+<?php
+class Connection {
+    protected $conn;
+
+    public function __construct() {
+        $host = 'localhost';
+        $dbname = 'elearn';
+        $username = 'root';
+        $password = 'password';
+
+        try {
+            $this->conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Connection failed: " . $e->getMessage());
+        }
+    }
 }
 ?>
+
+
+

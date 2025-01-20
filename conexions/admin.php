@@ -1,6 +1,6 @@
 <?php
 // Admin.php
-require_once 'User.php';  // Assuming User is your abstract parent class
+require_once 'User.php'; 
 
 class Admin extends User {
     private $conn;
@@ -10,10 +10,10 @@ class Admin extends User {
         $this->user_id = $id;
         $this->username = $name;
         $this->email = $email;
-        // Assuming the password is being set somewhere, either passed or retrieved
+            
     }
 
-    // Implementation of loadUserData method from the abstract User class
+
     public function loadUserData(): string {
         // Example of loading admin data from the database and returning it as a string
         $stmt = $this->conn->prepare("SELECT * FROM users WHERE user_id = ?");
@@ -30,7 +30,7 @@ class Admin extends User {
         $stmt->execute([$teacherId]);
     }
 
-    // Gestion des utilisateurs : Activation, suspension ou suppression
+ 
     public function activateUser($userId) {
         $stmt = $this->conn->prepare("UPDATE users SET status = 'active' WHERE user_id = ?");
         $stmt->execute([$userId]);
@@ -46,7 +46,7 @@ class Admin extends User {
         $stmt->execute([$userId]);
     }
 
-    // Gestion des contenus : Cours, catégories et tags
+
     public function manageCourse($action, $courseId, $title = null, $description = null, $content = null, $category = null) {
         if ($action === 'delete') {
             $stmt = $this->conn->prepare("DELETE FROM courses WHERE course_id = ?");
