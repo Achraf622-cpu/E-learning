@@ -26,24 +26,24 @@
 
     <div class="mb-10 text-center">
         <p class="text-lg text-gray-600 mb-6">YouDemy is an innovative e-learning platform that offers a wide range of courses for individuals looking to advance their skills and knowledge. Whether you're interested in programming, design, or business, YouDemy has something for everyone!</p>
-        <img src="./UML/heeeeerooooo.jpg"alt="YouDemy Logo" class="mx-auto rounded-md shadow-lg mb-6">
+        <img src="./img/heeeeerooooo.jpg"alt="YouDemy Logo" class="mx-auto rounded-md shadow-lg mb-6">
         <p class="text-lg text-gray-600">Join thousands of learners today and start your journey towards mastery!</p>
     </div>
 
     <h2 class="text-3xl font-bold text-green-600 mb-6 text-center">Featured Courses</h2>
     <div class="grid grid-cols-3 gap-6">
         <div class="bg-white p-6 rounded-lg shadow-lg">
-            <img src="https://via.placeholder.com/300x200?text=Course+Image" alt="Course 1" class="w-full h-40 object-cover rounded-md mb-4">
+            <img src="./img/How-to-create-an-online-course.jpg" alt="Course 1" class="w-full h-40 object-cover rounded-md mb-4">
             <h3 class="text-2xl font-bold text-green-600 mb-2">Course Title 1</h3>
             <p class="text-gray-600">Learn the fundamentals of programming with this beginner-friendly course.</p>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-lg">
-            <img src="https://via.placeholder.com/300x200?text=Course+Image" alt="Course 2" class="w-full h-40 object-cover rounded-md mb-4">
+            <img src="./img/successful-online-courses-featured-image.jpg" alt="Course 2" class="w-full h-40 object-cover rounded-md mb-4">
             <h3 class="text-2xl font-bold text-green-600 mb-2">Course Title 2</h3>
             <p class="text-gray-600">Master web design principles and build stunning websites from scratch.</p>
         </div>
         <div class="bg-white p-6 rounded-lg shadow-lg">
-            <img src="https://via.placeholder.com/300x200?text=Course+Image" alt="Course 3" class="w-full h-40 object-cover rounded-md mb-4">
+            <img src="" alt="Course 3" class="w-full h-40 object-cover rounded-md mb-4">
             <h3 class="text-2xl font-bold text-green-600 mb-2">Course Title 3</h3>
             <p class="text-gray-600">Explore the world of digital marketing and boost your career with key strategies.</p>
         </div>
