@@ -12,17 +12,15 @@ class Admin extends User {
     }
 
     public function getAllUsers() {
-        // Prepare the SQL query to fetch all users
+        // Use the query() method to execute the SQL statement directly
         $sql = "SELECT u.id, u.username, u.email, r.name AS role 
                 FROM users u
                 JOIN roles r ON u.role_id = r.id";
-
-        // Execute the query
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-
+    
+        // Execute the query and fetch all users
+        $stmt = $this->conn->query($sql); // Use query() instead of prepare()
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    
         return $users;
     }
 
