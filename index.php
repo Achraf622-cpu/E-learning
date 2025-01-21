@@ -2,16 +2,31 @@
 require './conexions/connect.php';
 session_start();
 
-
-
 $conn = new Connection();
-$user_role = $_SESSION['role'] ?? null; 
+$user_role = $_SESSION['role'] ?? null;
 
+// Pagination setup
+$limit = 6; // Number of courses per page
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Get total number of courses
+$total_query = "SELECT COUNT(*) as total FROM courses";
+$total_stmt = $conn->prepare($total_query);
+$total_stmt->execute();
+$total_courses = $total_stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+$total_pages = ceil($total_courses / $limit);
+
+// Fetch courses for the current page
 $query = "SELECT c.id, c.titre, c.para, c.img, c.date, u.username AS author 
           FROM courses c 
           JOIN users u ON c.id_users = u.id 
-          ORDER BY c.date DESC";
+          ORDER BY c.date DESC 
+          LIMIT :limit OFFSET :offset";
 $stmt = $conn->prepare($query);
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_id'], $_POST['comment_text'])) {
@@ -58,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_id'], $_POST['
         <?php
         if (!empty($courses)) {
             foreach ($courses as $course) {
-
                 // Use PDO to fetch comments for each course
                 $stmt = $conn->prepare("SELECT c.text, c.date, u.username 
                                         FROM comments c 
@@ -124,6 +138,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_id'], $_POST['
             echo "<p class='text-gray-500 col-span-3'>No courses found.</p>";
         }
         ?>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-10 flex justify-center">
+        <?php if ($total_pages > 1): ?>
+            <nav class="inline-flex">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?php echo $page - 1; ?>" class="px-4 py-2 bg-green-500 text-white rounded-l hover:bg-green-600">Previous</a>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <a href="?page=<?php echo $i; ?>" class="px-4 py-2 border border-green-500 <?php echo $i == $page ? 'bg-green-500 text-white' : 'text-green-500'; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                <?php endfor; ?>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="?page=<?php echo $page + 1; ?>" class="px-4 py-2 bg-green-500 text-white rounded-r hover:bg-green-600">Next</a>
+                <?php endif; ?>
+            </nav>
+        <?php endif; ?>
     </div>
 </div>
 
