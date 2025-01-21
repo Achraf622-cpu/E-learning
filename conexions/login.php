@@ -9,21 +9,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
 
     if (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password)) {
-        $login = new Login();  // No need to pass $conn because it's now handled by the Login class
-        $error_message = $login->authenticate($email, $password);
+        $login = new Login();
+        $user = $login->authenticate($email, $password); // Fetch user details instead of just an error message
 
+        if ($user) {
+            // Store user data in the session
+            $_SESSION['user_id'] = $user['id']; // The user ID (enseignant_id)
+            $_SESSION['user_email'] = $user['email'];
+            $_SESSION['user_role'] = $user['role_id']; // To identify 'enseignant' later
 
-        if (empty($error_message)) {
-            $_SESSION['user_email'] = $email; 
-
+            // Redirect to the dashboard
             header("Location: dashboard.php");
             exit();
+        } else {
+            $error_message = "Invalid email or password.";
         }
     } else {
         $error_message = "Please enter a valid email and password.";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

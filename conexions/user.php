@@ -10,7 +10,6 @@ class Enseignant extends User {
         $this->user_id = $id;
         $this->username = $name;
         $this->email = $email;
-        // Assuming the password is being set somewhere, either passed or retrieved
     }
 
     // Implementation of loadUserData method from the abstract User class
