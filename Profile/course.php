@@ -1,5 +1,5 @@
 <?php
-require '../conexions/connect.php';
+
 class Course {
     private $db;
 
@@ -8,64 +8,64 @@ class Course {
     }
 
     // Add a new course
-    public function addCourse($title, $content, $image, $enseignant_id) {
-        $query = "INSERT INTO courses (title, content, image, enseignant_id) VALUES (?, ?, ?, ?)";
+    public function addCourse($title, $content, $image, $enseignant_id, $video_url = '', $file = null) {
+        // Handle file upload (if any)
+        $file_path = '';
+        if ($file && in_array($file['type'], ['application/pdf'])) {
+            $upload_dir = '../uploads/';
+            $file_path = $upload_dir . basename($file['name']);
+            if (!move_uploaded_file($file['tmp_name'], $file_path)) {
+                echo "<script>Swal.fire('Error!', 'File upload failed.', 'error');</script>";
+                $file_path = '';
+            }
+        }
+
+        $query = "INSERT INTO courses (title, content, image, enseignant_id, video_url, file_path) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$title, $content, $image, $enseignant_id]);
+        $stmt->execute([$title, $content, $image, $enseignant_id, $video_url, $file_path]);
     }
 
     // Update an existing course
-    public function updateCourse($course_id, $title, $content, $image) {
-        $query = "UPDATE courses SET title = ?, content = ?, image = ? WHERE id = ?";
+    public function updateCourse($course_id, $title, $content, $image, $video_url = '', $file = null) {
+        // Handle file upload (if any)
+        $file_path = '';
+        if ($file && in_array($file['type'], ['application/pdf'])) {
+            $upload_dir = '../uploads/';
+            $file_path = $upload_dir . basename($file['name']);
+            if (!move_uploaded_file($file['tmp_name'], $file_path)) {
+                echo "<script>Swal.fire('Error!', 'File upload failed.', 'error');</script>";
+                $file_path = '';
+            }
+        }
+
+        $query = "UPDATE courses SET title = ?, content = ?, image = ?, video_url = ?, file_path = ? WHERE id = ?";
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$title, $content, $image, $course_id]);
+        $stmt->execute([$title, $content, $image, $video_url, $file_path, $course_id]);
     }
 
     // Delete a course
     public function deleteCourse($course_id) {
+        // Delete associated tags first
+        $query = "DELETE FROM course_tags WHERE course_id = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$course_id]);
+
+        // Then delete the course
         $query = "DELETE FROM courses WHERE id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->execute([$course_id]);
     }
 
     // Add a tag to a course
-    public function addTag($course_id, $tag) {
-        // Check if tag already exists
-        $query = "SELECT id FROM tags WHERE tag = ?";
+    public function getAllTags() {
+        // Query to fetch all tags
+        $query = "SELECT id, tag FROM tags";
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$tag]);
-        $tag_id = $stmt->fetchColumn();
-
-        if (!$tag_id) {
-            // If tag doesn't exist, insert new tag
-            $query = "INSERT INTO tags (tag) VALUES (?)";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$tag]);
-            $tag_id = $this->db->lastInsertId();
-        }
-
-        // Link course with tag
-        $query = "INSERT INTO course_tags (course_id, tag_id) VALUES (?, ?)";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$course_id, $tag_id]);
+        $stmt->execute();
+        
+        // Fetch all tags and return as an associative array
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    // Remove a tag from a course
-    public function removeTag($course_id, $tag) {
-        // Find tag ID
-        $query = "SELECT id FROM tags WHERE tag = ?";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$tag]);
-        $tag_id = $stmt->fetchColumn();
-
-        if ($tag_id) {
-            // Remove the link between the course and tag
-            $query = "DELETE FROM course_tags WHERE course_id = ? AND tag_id = ?";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$course_id, $tag_id]);
-        }
-    }
-
     // Get all courses for a teacher (enseignant)
     public function getAllCourses($enseignant_id) {
         $query = "SELECT * FROM courses WHERE enseignant_id = ?";
@@ -78,6 +78,7 @@ class Course {
     public function getCourseWithTags($course_id) {
         $query = "
             SELECT courses.id AS course_id, courses.title, courses.content, courses.image, 
+                   courses.video_url, courses.file_path,
                    tags.tag
             FROM courses
             LEFT JOIN course_tags ON courses.id = course_tags.course_id
@@ -87,6 +88,25 @@ class Course {
         $stmt = $this->db->prepare($query);
         $stmt->execute([$course_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Get all available courses for students
+    public function getAvailableCourses() {
+        $query = "SELECT courses.id, courses.title, courses.content, courses.image, users.username AS enseignant
+                  FROM courses
+                  JOIN users ON courses.enseignant_id = users.id";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Get the total number of courses
+    public function getTotalCourses(): int {
+        $query = "SELECT COUNT(*) AS total FROM courses";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)$result['total']; // Ensure it returns an integer
     }
 }
 ?>

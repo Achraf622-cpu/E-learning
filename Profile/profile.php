@@ -1,28 +1,22 @@
 <?php  
 require 'course.php';
+require '../conexions/connect.php';
 session_start();
-
-// if (!isset($_SESSION['enseignant_id'])) {
-//     header('Location: login.php');
-//     exit();
-// }
 
 $conn = new Connection();
 $enseignant_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+
+// Create an instance of the Course class
+$courseClass = new Course($conn);
 
 // Handle course deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_course_id'])) {
     try {
         $course_id = $_POST['delete_course_id'];
 
-        // Delete course from `courses` table
-        $stmt = $conn->prepare("DELETE FROM courses WHERE id = ? AND enseignant_id = ?");
-        $stmt->execute([$course_id, $enseignant_id]);
-
-        // Delete associated tags from `course_tags` table
-        $stmt = $conn->prepare("DELETE FROM course_tags WHERE course_id = ?");
-        $stmt->execute([$course_id]);
+        // Delete the course and associated tags using the OOP methods
+        $courseClass->deleteCourse($course_id, $enseignant_id);
 
         // Redirect to prevent form resubmission
         header("Location: " . $_SERVER['PHP_SELF']);
@@ -36,37 +30,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_course_id'])) 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_title'])) {
     $course_title = $_POST['course_title'];
     $course_description = $_POST['course_description'];
-    $course_tags = $_POST['course_tags'];
-    $file = $_FILES['course_file'];
+    $course_tags = $_POST['course_tags']; // Tags from the form
+    $file = $_FILES['course_file']; // PDF file upload
+    $video_url = $_POST['video_url']; // Video URL input
 
-    // Validate file type (allow only PDF and video)
-    $allowed_types = ['application/pdf', 'video/mp4', 'video/avi', 'video/mkv', 'video/mov'];
-    if (in_array($file['type'], $allowed_types)) {
-        // Process file upload
+    // Validate file type (allow only PDF for file upload)
+    $allowed_types = ['application/pdf'];
+    $file_path = '';
+
+    if (!empty($file['name']) && in_array($file['type'], $allowed_types)) {
+        // Process PDF file upload
         $upload_dir = '../uploads/';
         $file_path = $upload_dir . basename($file['name']);
 
-        if (move_uploaded_file($file['tmp_name'], $file_path)) {
-            // Add course to database
-            $courseClass = new Course($conn);
-            $course_id = $courseClass->addCourse($course_title, $course_description, $file_path, $enseignant_id);
-
-            // Optionally, handle tags
-            $tags = explode(',', $course_tags);
-            foreach ($tags as $tag) {
-                $courseClass->addTag($course_id, trim($tag));
-            }
-
-            // Redirect to prevent form resubmission
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
-        } else {
+        if (!move_uploaded_file($file['tmp_name'], $file_path)) {
             echo "<script>Swal.fire('Error!', 'File upload failed.', 'error');</script>";
+            $file_path = '';
         }
-    } else {
-        echo "<script>Swal.fire('Error!', 'Invalid file type. Only PDF and video files are allowed.', 'error');</script>";
+    }
+
+    try {
+        // Add the course using the OOP method
+        $course_id = $courseClass->addCourse($course_title, $course_description, $file_path, $enseignant_id, $video_url);
+
+        // Handle tags - store course-tags relationships using OOP methods
+        $tags = explode(',', $course_tags);
+
+        // Redirect to prevent form resubmission
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    } catch (PDOException $e) {
+        echo "<script>Swal.fire('Error!', 'Failed to add the course.', 'error');</script>";
     }
 }
+
+// Fetch available tags from the database using the OOP method
+$tags = $courseClass->getAllTags();
 ?>
 
 <!DOCTYPE html>
@@ -109,12 +108,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_title'])) {
                     <textarea name="course_description" placeholder="Write a description for the course..." class="w-full p-2 rounded bg-gray-100 border border-green-300 text-gray-800 mt-1" required></textarea>
                 </label>
                 <label class="block text-gray-700 mb-2">
-                    Tags (comma-separated):
-                    <input type="text" name="course_tags" placeholder="E.g., math, science, programming" class="w-full p-2 rounded bg-gray-100 border border-green-300 text-gray-800 mt-1">
+                    Tags:
+                    <select name="course_tags[]" class="w-full p-2 rounded bg-gray-100 border border-green-300 text-gray-800 mt-1" multiple required>
+                        <?php foreach ($tags as $tag): ?>
+                            <option value="<?= htmlspecialchars($tag['tag']); ?>"><?= htmlspecialchars($tag['tag']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </label>
                 <label class="block text-gray-700 mb-4">
-                    Upload Course File (PDF/Video only):
-                    <input type="file" name="course_file" class="block w-full text-gray-800 border border-green-300 bg-gray-100 mt-1" accept=".pdf, .mp4, .avi, .mkv, .mov" required>
+                    Upload Course File (PDF only):
+                    <input type="file" name="course_file" class="block w-full text-gray-800 border border-green-300 bg-gray-100 mt-1" accept=".pdf">
+                </label>
+                <label class="block text-gray-700 mb-4">
+                    Video URL (e.g., YouTube):
+                    <input type="text" name="video_url" placeholder="Enter video URL" class="w-full p-2 rounded bg-gray-100 border border-green-300 text-gray-800 mt-1">
                 </label>
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Submit Course</button>
             </form>
@@ -125,31 +132,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_title'])) {
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php
                 try {
-                    // Fetch courses created by the logged-in teacher
-                    $stmt = $conn->prepare("SELECT * FROM courses WHERE enseignant_id = ?");
-                    $stmt->execute([$enseignant_id]);
-                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    // Fetch courses created by the logged-in teacher using the OOP method
+                    $courses = $courseClass->getAllCourses($enseignant_id);
 
-                    if ($result):
-                        foreach ($result as $row): ?>
+                    if ($courses):
+                        foreach ($courses as $row): ?>
                             <div class="bg-white p-4 rounded-lg shadow-lg border border-green-300">
                                 <h3 class="text-lg font-bold text-green-600"><?= htmlspecialchars($row['title']); ?></h3>
                                 <p class="text-gray-600 mt-4"><?= htmlspecialchars(substr($row['content'], 0, 100)) . '...'; ?></p>
-                                <a href="<?= htmlspecialchars($row['image']); ?>" class="text-green-700 hover:text-green-900 mt-4 block" download>Download Course</a>
 
-                                <!-- Delete Button -->
-                                <form action="" method="POST" onsubmit="return confirm('Are you sure you want to delete this course?');">
-                                    <input type="hidden" name="delete_course_id" value="<?= $row['id']; ?>">
-                                    <button type="submit" class="px-4 py-2 mt-4 bg-red-600 text-white rounded hover:bg-red-700">Delete Course</button>
+                                <!-- Show PDF download link -->
+                                <?php if ($row['image']): ?>
+                                    <a href="<?= htmlspecialchars($row['image']); ?>" class="text-green-700 hover:text-green-900 mt-4 block" download>Download PDF</a>
+                                <?php endif; ?>
+
+                                <!-- Show video link -->
+                                <?php if ($row['video_url']): ?>
+                                    <a href="<?= htmlspecialchars($row['video_url']); ?>" target="_blank" class="text-green-700 hover:text-green-900 mt-4 block">Watch Video</a>
+                                <?php endif; ?>
+
+                                <!-- Delete button -->
+                                <form method="POST" class="mt-4">
+                                    <input type="hidden" name="delete_course_id" value="<?= htmlspecialchars($row['id']); ?>">
+                                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
                                 </form>
                             </div>
                         <?php endforeach;
-                    else: ?>
-                        <p class="text-gray-600">No courses found.</p>
-                    <?php endif;
-
+                    else:
+                        echo "<p>No courses found.</p>";
+                    endif;
                 } catch (PDOException $e) {
-                    echo "Error: " . $e->getMessage();
+                    echo "<script>Swal.fire('Error!', 'Failed to fetch courses.', 'error');</script>";
                 }
                 ?>
             </div>
