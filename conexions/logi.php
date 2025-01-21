@@ -16,7 +16,7 @@ class Login extends Connection {
 
 
             if ($user['name'] === 'admin') {
-                header("Location: ../admin/admin.php");
+                header("Location: ../admin/adminpro.php");
                 exit;
             } else if ($user['name'] === 'enseignant') {
                 header("Location: ../Profile/profile.php");
