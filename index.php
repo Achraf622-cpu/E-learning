@@ -3,15 +3,16 @@ require './conexions/connect.php';
 session_start();
 
 
-$user_role = $_SESSION['role'] ?? null; // Assume 'role' is stored in the session
+
+$conn = new Connection();
+$user_role = $_SESSION['role'] ?? null; 
 
 $query = "SELECT c.id, c.titre, c.para, c.img, c.date, u.username AS author 
           FROM courses c 
           JOIN users u ON c.id_users = u.id 
           ORDER BY c.date DESC";
 $stmt = $conn->prepare($query);
-$stmt->execute();
-$courses = $stmt->fetchAll(PDO::FETCH_ASSOC); // Get results as an associative array
+$courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_id'], $_POST['comment_text'])) {
     $course_id = intval($_POST['course_id']);
