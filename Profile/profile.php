@@ -1,5 +1,7 @@
 <?php  
+require '../conexions/connect.php';
 require 'course.php';
+
 session_start();
 
 // if (!isset($_SESSION['enseignant_id'])) {

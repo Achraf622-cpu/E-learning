@@ -1,5 +1,5 @@
 <?php
-require '../conexions/connect.php';
+
 class Course {
     private $db;
 
@@ -67,12 +67,12 @@ class Course {
     }
 
     // Get all courses for a teacher (enseignant)
-    public function getAllCourses($enseignant_id) {
-        $query = "SELECT * FROM courses WHERE enseignant_id = ?";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$enseignant_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    // public function getAllCourses($enseignant_id) {
+    //     $query = "SELECT * FROM courses WHERE enseignant_id = ?";
+    //     $stmt = $this->db->prepare($query);
+    //     $stmt->execute([$enseignant_id]);
+    //     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // }
 
     // Get a course by its ID with tags
     public function getCourseWithTags($course_id) {
@@ -88,5 +88,32 @@ class Course {
         $stmt->execute([$course_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function getAllCourses($limit, $offset) {
+        $stmt = $this->db->prepare("SELECT c.id, c.title, c.content, c.image, c.date, u.username AS enseignant 
+                                     FROM courses c 
+                                     JOIN users u ON c.enseignant_id = u.id 
+                                      ORDER BY c.date DESC 
+                                     LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getTotalCourses() {
+        $stmt = $this->db->query("SELECT COUNT(*) FROM courses");
+        return $stmt->fetchColumn();
+    }
+    
+    public function getCourseDetails($course_id) {
+        // Prepare query to fetch course details
+        $stmt = $this->db->prepare("SELECT courses.id, courses.title, courses.content, courses.image, courses.date, courses.file, users.username AS author
+                                      FROM courses
+                                      JOIN users ON users.id = courses.enseignant_id
+                                      WHERE courses.id = ?");
+        $course = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $course ? $course : null;
+    }
+
 }
 ?>
