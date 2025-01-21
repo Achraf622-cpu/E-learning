@@ -11,121 +11,132 @@ class Admin extends User {
     }
 
     public function getAllUsers() {
-        // Use the query() method to execute the SQL statement directly
         $sql = "SELECT u.id, u.username, u.email, r.name AS role 
                 FROM users u
                 JOIN roles r ON u.role_id = r.id";
-    
-        // Execute the query and fetch all users
-        $stmt = $this->conn->query($sql); // Use query() instead of prepare()
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-        return $users;
+        $stmt = $this->conn->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function loadUserData(): string {
-        // Load admin data from the database and return it as a JSON string
         $stmt = $this->conn->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$this->user_id]); // Use $this->user_id, inherited from User class
+        $stmt->execute([$this->user_id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Return the user data as a JSON string
         return $user ? json_encode($user) : json_encode([]);
     }
 
-    public function validateTeacherAccount($teacherId) {
-        // Validate a teacher account (for 'enseignant' role)
+    public function validateTeacherAccount($approvalRequestId) {
+        // Approve a teacher account
+        $stmt = $this->conn->prepare(
+            "UPDATE approval_requests 
+             SET status = 'approved' 
+             WHERE id = ?"
+        );
+        $stmt->execute([$approvalRequestId]);
+
+        // Promote the user to 'enseignant' role after approval
         $stmt = $this->conn->prepare(
             "UPDATE users 
              SET role_id = (SELECT id FROM roles WHERE name = 'enseignant') 
-             WHERE id = ?"
+             WHERE id = (SELECT user_id FROM approval_requests WHERE id = ?)"
         );
-        $stmt->execute([$teacherId]);
+        $stmt->execute([$approvalRequestId]);
     }
 
- 
+    public function rejectTeacherAccount($approvalRequestId) {
+        // Reject a teacher account request
+        $stmt = $this->conn->prepare(
+            "UPDATE approval_requests 
+             SET status = 'rejected' 
+             WHERE id = ?"
+        );
+        $stmt->execute([$approvalRequestId]);
+    }
+
     public function activateUser($userId) {
-        $stmt = $this->conn->prepare("UPDATE users SET status = 'active' WHERE user_id = ?");
+        $stmt = $this->conn->prepare("UPDATE users SET status = 'active' WHERE id = ?");
         $stmt->execute([$userId]);
     }
 
     public function suspendUser($userId) {
-        $stmt = $this->conn->prepare("UPDATE users SET status = 'suspended' WHERE user_id = ?");
+        $stmt = $this->conn->prepare("UPDATE users SET status = 'suspended' WHERE id = ?");
         $stmt->execute([$userId]);
     }
 
     public function deleteUser($userId) {
-        $stmt = $this->conn->prepare("DELETE FROM users WHERE user_id = ?");
+        $stmt = $this->conn->prepare("DELETE FROM users WHERE id = ?");
         $stmt->execute([$userId]);
     }
 
-
     public function manageCategory($action, $categoryId = null, $categoryName = null) {
         if ($action === 'delete') {
-            $stmt = $this->conn->prepare("DELETE FROM categories WHERE category_id = ?");
+            $stmt = $this->conn->prepare("DELETE FROM categories WHERE id = ?");
             $stmt->execute([$categoryId]);
-        } else if ($action === 'add') {
+        } elseif ($action === 'add') {
             $stmt = $this->conn->prepare("INSERT INTO categories (name) VALUES (?)");
             $stmt->execute([$categoryName]);
         }
     }
 
-    // Insertion en masse de tags pour gagner en efficacité
     public function bulkInsertTags($tags) {
         foreach ($tags as $tag) {
-            $stmt = $this->conn->prepare("INSERT INTO tags (name) VALUES (?)");
+            $stmt = $this->conn->prepare("INSERT INTO tags (tag) VALUES (?)");
             $stmt->execute([$tag]);
         }
     }
-    public function deleteCourse($Course_id) {
-        $stmt = $this->conn->prepare("DELETE FROM articles WHERE id = ?");
-        $stmt->execute([$Course_id]);
+
+    public function deleteCourse($courseId) {
+        $stmt = $this->conn->prepare("DELETE FROM courses WHERE id = ?");
+        $stmt->execute([$courseId]);
     }
 
-    // Example function within Admin class to get courses
-public function getCourses($filter_date = '', $sort_order = 'recent') {
-    // Prepare the SQL query for fetching courses
-    $query = "SELECT * FROM courses"; // Ensure this is the correct table (courses)
+    public function getCourses($filter_date = '', $sort_order = 'recent') {
+        $query = "SELECT * FROM courses";
 
-    // Filter by date if specified
-    if (!empty($filter_date)) {
-        $query .= " WHERE date >= :filter_date"; // Assuming date is the column name
+        if (!empty($filter_date)) {
+            $query .= " WHERE date >= :filter_date";
+        }
+
+        if ($sort_order === 'recent') {
+            $query .= " ORDER BY date DESC";
+        } else {
+            $query .= " ORDER BY date ASC";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        if (!empty($filter_date)) {
+            $stmt->bindParam(':filter_date', $filter_date);
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Sorting logic
-    if ($sort_order === 'recent') {
-        $query .= " ORDER BY date DESC"; // Assuming 'date' is the column for sorting
-    } else {
-        $query .= " ORDER BY date ASC";
+    public function getUserCountByRole($roleName) {
+        $stmt = $this->conn->prepare(
+            "SELECT COUNT(*) 
+             FROM users u 
+             JOIN roles r ON u.role_id = r.id 
+             WHERE r.name = ?"
+        );
+        $stmt->execute([$roleName]);
+        return $stmt->fetchColumn();
     }
 
-    // Prepare and execute the query
-    $stmt = $this->conn->prepare($query);
-
-    // Bind parameters if needed
-    if (!empty($filter_date)) {
-        $stmt->bindParam(':filter_date', $filter_date);
+    public function getTotalCourses() {
+        $stmt = $this->conn->query("SELECT COUNT(*) FROM courses");
+        return $stmt->fetchColumn();
     }
 
-    // Execute the query
-    $stmt->execute();
-
-    // Fetch all courses
-    $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    return $courses;
-}
-public function getUserCountByRole($roleName) {
-    $stmt = $this->conn->prepare("SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = ?");
-    $stmt->execute([$roleName]);
-    return $stmt->fetchColumn();
-}
-
-public function getTotalCourses() {
-    $stmt = $this->conn->query("SELECT COUNT(*) FROM courses");
-    return $stmt->fetchColumn();
-}
-
-
+    public function getPendingApprovalRequests() {
+        $stmt = $this->conn->query(
+            "SELECT ar.id, u.username, u.email, ar.created_at 
+             FROM approval_requests ar
+             JOIN users u ON ar.user_id = u.id 
+             WHERE ar.status = 'pending'"
+        );
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>
