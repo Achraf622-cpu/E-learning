@@ -80,8 +80,10 @@ $courses = $admin->getCourses($filter_date, $sort_order);
     <aside class="w-1/4 bg-white p-6 shadow-md border-r border-green-300">
         <h2 class="text-3xl font-extrabold text-green-600 mb-6">Admin Panel</h2>
         <ul class="space-y-6">
-            <li><a href="admin.php" class="block text-gray-700 hover:text-green-500 transition duration-300">Manage Users</a></li>
-            <li><a href="manage_courses.php" class="block text-gray-700 hover:text-green-500 transition duration-300">Manage Courses</a></li>
+        <li><a href="manage.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Manage Courses</a></li>
+        <li><a href="../home.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Home</a></li>
+        <li><a href="adminpro.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Dashboard</a></li>
+        <li><a href="admin.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Manage Users</a></li>
         </ul>
         <div class="mt-6">
             <a href="../conexions/logout.php" class="block text-red-500 hover:text-red-700 transition duration-300">Logout</a>
