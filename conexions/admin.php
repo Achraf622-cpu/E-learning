@@ -65,7 +65,7 @@ class Admin extends User {
         if ($action === 'delete') {
             $stmt = $this->conn->prepare("DELETE FROM categories WHERE category_id = ?");
             $stmt->execute([$categoryId]);
-        } elseif ($action === 'add') {
+        } else if ($action === 'add') {
             $stmt = $this->conn->prepare("INSERT INTO categories (name) VALUES (?)");
             $stmt->execute([$categoryName]);
         }
@@ -78,6 +78,55 @@ class Admin extends User {
             $stmt->execute([$tag]);
         }
     }
+    public function deleteCourse($Course_id) {
+        $stmt = $this->conn->prepare("DELETE FROM articles WHERE id = ?");
+        $stmt->execute([$Course_id]);
+    }
+
+    // Example function within Admin class to get courses
+public function getCourses($filter_date = '', $sort_order = 'recent') {
+    // Prepare the SQL query for fetching courses
+    $query = "SELECT * FROM courses"; // Ensure this is the correct table (courses)
+
+    // Filter by date if specified
+    if (!empty($filter_date)) {
+        $query .= " WHERE date >= :filter_date"; // Assuming date is the column name
+    }
+
+    // Sorting logic
+    if ($sort_order === 'recent') {
+        $query .= " ORDER BY date DESC"; // Assuming 'date' is the column for sorting
+    } else {
+        $query .= " ORDER BY date ASC";
+    }
+
+    // Prepare and execute the query
+    $stmt = $this->conn->prepare($query);
+
+    // Bind parameters if needed
+    if (!empty($filter_date)) {
+        $stmt->bindParam(':filter_date', $filter_date);
+    }
+
+    // Execute the query
+    $stmt->execute();
+
+    // Fetch all courses
+    $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return $courses;
+}
+public function getUserCountByRole($roleName) {
+    $stmt = $this->conn->prepare("SELECT COUNT(*) FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = ?");
+    $stmt->execute([$roleName]);
+    return $stmt->fetchColumn();
+}
+
+public function getTotalCourses() {
+    $stmt = $this->conn->query("SELECT COUNT(*) FROM courses");
+    return $stmt->fetchColumn();
+}
+
 
 }
 ?>

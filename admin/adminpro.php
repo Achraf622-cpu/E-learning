@@ -1,131 +1,112 @@
+<?php
+session_start();
+require '../conexions/connect.php'; 
+require '../conexions/admin.php'; // Assuming you have a Connection class for PDO
+
+// Initialize connection
+$conn = new Connection();// Using your existing connection class
+
+// Initialize Admin
+$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $_SESSION['email'], $conn);
+
+// Fetch total statistics
+$totalStudents = $admin->getUserCountByRole('student');
+$totalCourses = $admin->getTotalCourses();
+$totalTeachers = $admin->getUserCountByRole('enseignant');
+
+// Handle ban user request
+if (isset($_GET['ban_user'])) {
+    $admin->suspendUser($_GET['ban_user']);
+    header("Location: manage_statistics.php"); // Refresh the page after banning user
+    exit();
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile</title>
+    <title>Admin Dashboard - Statistics</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(120deg, #d4fc79, #96e6a1); /* Minty Green-to-White Gradient */
+        }
+
+        .card {
+            background: linear-gradient(145deg, #ffffff, #e0f7df);
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-mint {
+            background-color: #38b48b;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .button-mint:hover {
+            background-color: #2a926e;
+            transform: scale(1.05);
+        }
+
+        .input-mint {
+            border: 2px solid #38b48b;
+            color: #333;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .input-mint:focus {
+            border-color: #2a926e;
+            box-shadow: 0 0 4px #38b48b;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+<body class="text-gray-900">
 
-   
-    <div class="flex min-h-screen">
+<div class="flex min-h-screen">
 
-     
-        <aside class="w-1/4 bg-gray-800 p-6 border-r border-gray-700">
-            <h2 class="text-3xl font-extrabold text-blue-400 mb-6">Admin Menu</h2>
-            <ul class="space-y-6">
-                <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Profile</a></li>
-                <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Home</a></li>
-                <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Navigate Tags</a></li>
-                <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Users</a></li>
-            </ul>
-        </aside>
+    <!-- Sidebar -->
+    <aside class="w-1/4 bg-white p-6 shadow-md">
+        <h2 class="text-3xl font-extrabold text-mint mb-6">Admin Panel</h2>
+        <ul class="space-y-6">
+            <li><a href="manage_dashboard.php" class="block text-gray-700 hover:text-mint transition duration-300">Dashboard</a></li>
+            <li><a href="manage_statistics.php" class="block text-gray-700 hover:text-mint transition duration-300">Statistics</a></li>
+            <li><a href="manage_courses.php" class="block text-gray-700 hover:text-mint transition duration-300">Manage Courses</a></li>
+        </ul>
+    </aside>
 
+    <!-- Main Content -->
+    <main class="w-3/4 p-8">
+        <div class="text-center mb-10">
+            <h1 class="text-5xl font-extrabold text-mint mb-4">Admin Dashboard - Statistics</h1>
+            <p class="text-lg text-gray-700">View statistics for the app</p>
+        </div>
 
-        <main class="w-3/4 p-8 bg-gray-900">
-
-
-            <div class="text-center mb-6">
-                <p class="text-lg text-gray-300">You're an admin</p>
+        <!-- Statistics -->
+        <div class="grid grid-cols-3 gap-6">
+            <!-- Total Students -->
+            <div class="card p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-mint mb-2">Total Students</h3>
+                <p class="text-xl text-gray-700"><?php echo $totalStudents; ?></p>
             </div>
 
-
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
-                <div class="flex items-center">
-                    <img src="https://via.placeholder.com/100" alt="User Avatar" class="w-20 h-20 rounded-full border-4 border-blue-400">
-                    <div class="ml-6">
-                        <h1 class="text-2xl font-bold text-blue-400">User Name</h1>
-                        <p class="text-gray-400">Email: email@example.com</p>
-                        <p class="text-gray-400">Total Posts: XX</p>
-                    </div>
-                </div>
+            <!-- Total Courses -->
+            <div class="card p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-mint mb-2">Total Courses</h3>
+                <p class="text-xl text-gray-700"><?php echo $totalCourses; ?></p>
             </div>
 
-
-            <div class="flex justify-end mb-6">
-                <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Add Post
-                </button>
+            <!-- Total Teachers -->
+            <div class="card p-6 rounded-lg">
+                <h3 class="text-2xl font-bold text-mint mb-2">Total Teachers</h3>
+                <p class="text-xl text-gray-700"><?php echo $totalTeachers; ?></p>
             </div>
+        </div>
 
+    </main>
 
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-bold mb-4 text-blue-400">Add a New Post</h2>
-
-                <form>
-
-                    <label class="block text-white mb-2">
-                        Title:
-                        <input type="text" placeholder="Enter your post title" 
-                               class="w-full p-2 rounded bg-gray-700 text-white mt-1">
-                    </label>
-
-
-                    <label class="block text-white mb-2">
-                        Description:
-                        <textarea placeholder="Write a description for your post..." 
-                                  class="w-full p-2 rounded bg-gray-700 text-white mt-1"></textarea>
-                    </label>
-
-
-                    <label class="block text-white mb-2">
-                        Tags (comma-separated):
-                        <input type="text" placeholder="E.g., coding, design, technology" 
-                               class="w-full p-2 rounded bg-gray-700 text-white mt-1">
-                    </label>
-
-
-                    <label class="block text-white mb-4">
-                        Upload Image:
-                        <input type="file" class="block w-full text-white mt-1">
-                    </label>
-
-
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        Submit Post
-                    </button>
-                </form>
-            </div>
-
-
-            <div class="mt-10">
-                <h2 class="text-2xl font-bold text-blue-400 mb-4">Your Blogs</h2>
-
-
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg relative mb-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-white">Sample Blog Title</h3>
-                        <button class="relative group">
-                            <img src="https://via.placeholder.com/40" alt="Options" class="w-8 h-8 rounded-full">
-                            <ul class="absolute hidden group-hover:block bg-gray-700 text-white rounded-lg shadow-lg mt-2">
-                                <li class="px-4 py-2 hover:bg-gray-600">Modify</li>
-                                <li class="px-4 py-2 hover:bg-gray-600">Delete</li>
-                            </ul>
-                        </button>
-                    </div>
-                    <img src="https://via.placeholder.com/600x300" alt="Blog Image" class="rounded-lg mb-4">
-                    <p class="text-gray-400">This is a brief description of the blog post. It gives a quick overview of what the blog is about.</p>
-                    <p class="text-gray-500 text-sm mt-2">Tags: coding, design</p>
-                </div>
-            </div>
-
-
-            <div class="mt-10">
-                <h2 class="text-2xl font-bold text-blue-400 mb-4">Manage Users</h2>
-
-
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold text-white mb-4">User List</h3>
-                    <ul>
-                        <li class="text-gray-300">User1 (user1@example.com)</li>
-                        <li class="text-gray-300">User2 (user2@example.com)</li>
-                        <li class="text-gray-300">User3 (user3@example.com)</li>
-                    </ul>
-                </div>
-            </div>
-        </main>
-    </div>
+</div>
 
 </body>
 </html>

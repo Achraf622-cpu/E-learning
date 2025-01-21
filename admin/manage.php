@@ -1,5 +1,6 @@
 <?php
 require '../conexions/connect.php'; // Ensure this file returns a valid PDO connection.
+require_once '../conexions/Admin.php'; // Include the Admin class file
 session_start();
 
 // Ensure only admins can access this page
@@ -7,13 +8,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../conexions/login.php");
     exit;
 }
+$conn = new Connection();
 
-// Handle blog deletion
-if (isset($_GET['delete_blog'])) {
-    $blog_id = intval($_GET['delete_blog']);
-    $stmt = $conn->prepare("DELETE FROM articles WHERE id = :id");
-    $stmt->bindParam(':id', $blog_id, PDO::PARAM_INT);
-    $stmt->execute();
+$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $_SESSION['email'], $conn);
+
+
+if (isset($_GET['delete_course'])) { 
+    $course_id = intval($_GET['delete_course']); 
+    $admin->deleteCourse($course_id); // Use Admin class method for deletion
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -22,25 +24,9 @@ if (isset($_GET['delete_blog'])) {
 $filter_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : '';
 $sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'recent';
 
-$query = "SELECT a.id, a.titre, a.para, a.img, a.date, u.username AS author 
-          FROM articles a 
-          JOIN users u ON a.id_users = u.id";
+// Fetch courses using Admin class method
+$courses = $admin->getCourses($filter_date, $sort_order);
 
-$params = [];
-if ($filter_date) {
-    $query .= " WHERE DATE(a.date) = :filter_date";
-    $params[':filter_date'] = $filter_date;
-}
-
-if ($sort_order === 'oldest') {
-    $query .= " ORDER BY a.date ASC";
-} else {
-    $query .= " ORDER BY a.date DESC"; // Default is recent
-}
-
-$stmt = $conn->prepare($query);
-$stmt->execute($params);
-$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -52,7 +38,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(120deg, #d4fc79, #96e6a1);
+            background: linear-gradient(120deg, #ffffff, #d4fc79); /* Correct Minty Green-to-White Gradient */
         }
 
         .card {
@@ -91,18 +77,18 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside class="w-1/4 bg-white p-6 shadow-md">
-        <h2 class="text-3xl font-extrabold text-mint mb-6">Admin Panel</h2>
+    <aside class="w-1/4 bg-white p-6 shadow-md border-r border-green-300">
+        <h2 class="text-3xl font-extrabold text-green-600 mb-6">Admin Panel</h2>
         <ul class="space-y-6">
-            <li><a href="admin.php" class="block text-gray-700 hover:text-mint transition duration-300">Manage Users</a></li>
-            <li><a href="manage_courses.php" class="block text-gray-700 hover:text-mint transition duration-300">Manage Courses</a></li>
+            <li><a href="admin.php" class="block text-gray-700 hover:text-green-500 transition duration-300">Manage Users</a></li>
+            <li><a href="manage_courses.php" class="block text-gray-700 hover:text-green-500 transition duration-300">Manage Courses</a></li>
         </ul>
     </aside>
 
     <!-- Main Content -->
-    <main class="w-3/4 p-8">
+    <main class="w-3/4 p-8 bg-gradient-to-br from-white via-green-100 to-green-200 shadow-lg">
         <div class="text-center mb-10">
-            <h1 class="text-5xl font-extrabold text-mint mb-4">Manage Courses</h1>
+            <h1 class="text-5xl font-extrabold text-green-600 mb-4">Manage Courses</h1>
             <p class="text-lg text-gray-700">View, filter, and manage courses</p>
         </div>
 
@@ -130,18 +116,18 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Course List -->
         <div class="grid grid-cols-3 gap-6">
             <?php
-            if ($result) {
-                foreach ($result as $row) {
+            // Assume $courses is populated with courses data
+            if ($courses) {
+                foreach ($courses as $row) {
                     ?>
                     <div class="card p-6 rounded-lg">
                         <img src="<?php echo htmlspecialchars($row['img']); ?>" alt="Course Thumbnail" class="w-full h-40 object-cover rounded-md mb-4">
-                        <h3 class="text-2xl font-bold text-mint mb-2"><?php echo htmlspecialchars($row['titre']); ?></h3>
+                        <h3 class="text-2xl font-bold text-green-600 mb-2"><?php echo htmlspecialchars($row['titre']); ?></h3>
                         <p class="text-gray-600 mb-4"><?php echo htmlspecialchars(substr($row['para'], 0, 100)) . '...'; ?></p>
                         <p class="text-gray-500 text-sm mb-4">By: <?php echo htmlspecialchars($row['author']); ?></p>
                         <p class="text-gray-500 text-sm mb-4">Published on: <?php echo htmlspecialchars($row['date']); ?></p>
                         <div class="flex justify-end">
-                            <a href="?delete_blog=<?php echo $row['id']; ?>"
-                               class="button-mint text-white py-2 px-4 rounded-md"
+                            <a href="?delete_course=<?php echo $row['id']; ?>" class="button-mint text-white py-2 px-4 rounded-md"
                                onclick="return confirm('Are you sure you want to delete this course?');">
                                 Delete Course
                             </a>
@@ -160,5 +146,6 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </body>
 </html>
+
 
 
