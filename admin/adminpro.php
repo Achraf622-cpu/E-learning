@@ -3,11 +3,11 @@ session_start();
 require '../conexions/connect.php'; 
 require '../conexions/admin.php'; // Assuming you have a Connection class for PDO
 
-// Initialize connection
-$conn = new Connection();// Using your existing connection class
+
+$conn = new Connection();
 
 // Initialize Admin
-$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $_SESSION['email'], $conn);
+$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);
 
 // Fetch total statistics
 $totalStudents = $admin->getUserCountByRole('student');
@@ -70,10 +70,13 @@ if (isset($_GET['ban_user'])) {
     <aside class="w-1/4 bg-white p-6 shadow-md">
         <h2 class="text-3xl font-extrabold text-mint mb-6">Admin Panel</h2>
         <ul class="space-y-6">
-            <li><a href="manage_dashboard.php" class="block text-gray-700 hover:text-mint transition duration-300">Dashboard</a></li>
-            <li><a href="manage_statistics.php" class="block text-gray-700 hover:text-mint transition duration-300">Statistics</a></li>
-            <li><a href="manage_courses.php" class="block text-gray-700 hover:text-mint transition duration-300">Manage Courses</a></li>
+            <li><a href="adminpro.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Dashboard</a></li>
+            <li><a href="manage.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Manage Courses</a></li>
+            <li><a href="admin.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Manage Users</a></li>
         </ul>
+        <div class="mt-6">
+            <a href="../conexions/logout.php" class="block text-red-500 hover:text-red-700 transition duration-300">Logout</a>
+        </div>
     </aside>
 
     <!-- Main Content -->

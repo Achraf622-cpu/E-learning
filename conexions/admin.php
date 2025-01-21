@@ -4,10 +4,9 @@ require_once 'Human.php';
 class Admin extends User {
     private $conn;
 
-    public function __construct($id, $name, $email, $conn) {
+    public function __construct($id, $name, $conn) {
         $this->user_id = $id;       
-        $this->username = $name;  
-        $this->email = $email;     
+        $this->username = $name;       
         $this->conn = $conn;       
     }
 

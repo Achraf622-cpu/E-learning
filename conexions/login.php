@@ -11,6 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password)) {
         $login = new Login();  // No need to pass $conn because it's now handled by the Login class
         $error_message = $login->authenticate($email, $password);
+
+
+        if (empty($error_message)) {
+            $_SESSION['user_email'] = $email; 
+
+            header("Location: dashboard.php");
+            exit();
+        }
     } else {
         $error_message = "Please enter a valid email and password.";
     }

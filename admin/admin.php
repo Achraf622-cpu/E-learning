@@ -5,13 +5,13 @@ require '../conexions/admin.php';
 session_start();
 
 // Verify the admin role
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../conexions/login.php");
-    exit;
-}
+// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+//     header("Location: ../conexions/login.php");
+//     exit;
+// }
 $conn = new Connection();
 // Initialize the Admin class with the provided PDO connection
-$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $_SESSION['email'], $conn);
+$admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);
 
 // Handle actions using the new Admin class
 if (isset($_GET['promote'])) {
@@ -52,7 +52,8 @@ if (isset($_GET['ban'])) {
     <aside class="w-1/4 bg-white p-6 border-r border-green-300 shadow-lg">
         <h2 class="text-3xl font-extrabold text-green-600 mb-6">Admin Panel</h2>
         <ul class="space-y-6">
-            <li><a href="../index.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Dashboard</a></li>
+            <li><a href="../home.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Home</a></li>
+            <li><a href="adminpro.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Dashboard</a></li>
             <li><a href="manage.php" class="block text-gray-800 hover:text-green-500 transition duration-300">Manage Courses</a></li>
             <li><a href="" class="block text-gray-800 hover:text-green-500 transition duration-300">Manage Users</a></li>
         </ul>

@@ -4,7 +4,7 @@ require 'connect.php';
 class Login extends Connection {
 
     public function authenticate($email, $password) {
-        // Get user info along with the role
+
         $stmt = $this->conn->prepare("SELECT u.id, u.password, u.username, r.name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -14,12 +14,15 @@ class Login extends Connection {
             $_SESSION['role'] = $user['name'];
             $_SESSION['username'] = $user['username'];
 
-            // Redirect based on the role
+
             if ($user['name'] === 'admin') {
                 header("Location: ../admin/admin.php");
                 exit;
-            } else {
+            } else if ($user['name'] === 'enseignant') {
                 header("Location: ../Profile/profile.php");
+                exit;
+            } else {
+                header("Location: ../Profile/etudiant.php");
                 exit;
             }
         } else {
