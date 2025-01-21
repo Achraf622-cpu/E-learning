@@ -1,32 +1,48 @@
 <?php
-// Admin.php
-require_once 'User.php'; 
+require_once 'Human.php';
 
 class Admin extends User {
     private $conn;
 
     public function __construct($id, $name, $email, $conn) {
-        $this->conn = $conn;
-        $this->user_id = $id;
-        $this->username = $name;
-        $this->email = $email;
-            
+        $this->user_id = $id;       
+        $this->username = $name;  
+        $this->email = $email;     
+        $this->conn = $conn;       
     }
 
+    public function getAllUsers() {
+        // Prepare the SQL query to fetch all users
+        $sql = "SELECT u.id, u.username, u.email, r.name AS role 
+                FROM users u
+                JOIN roles r ON u.role_id = r.id";
+
+        // Execute the query
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $users;
+    }
 
     public function loadUserData(): string {
-        // Example of loading admin data from the database and returning it as a string
-        $stmt = $this->conn->prepare("SELECT * FROM users WHERE user_id = ?");
-        $stmt->execute([$this->user_id]);
+        // Load admin data from the database and return it as a JSON string
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$this->user_id]); // Use $this->user_id, inherited from User class
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         // Return the user data as a JSON string
-        return json_encode($user);
+        return $user ? json_encode($user) : json_encode([]);
     }
 
-    // Validation des comptes enseignants
     public function validateTeacherAccount($teacherId) {
-        $stmt = $this->conn->prepare("UPDATE users SET status = 'validated' WHERE user_id = ? AND role_id = (SELECT id FROM roles WHERE name = 'enseignant')");
+        // Validate a teacher account (for 'enseignant' role)
+        $stmt = $this->conn->prepare(
+            "UPDATE users 
+             SET role_id = (SELECT id FROM roles WHERE name = 'enseignant') 
+             WHERE id = ?"
+        );
         $stmt->execute([$teacherId]);
     }
 
@@ -47,16 +63,6 @@ class Admin extends User {
     }
 
 
-    public function manageCourse($action, $courseId, $title = null, $description = null, $content = null, $category = null) {
-        if ($action === 'delete') {
-            $stmt = $this->conn->prepare("DELETE FROM courses WHERE course_id = ?");
-            $stmt->execute([$courseId]);
-        } elseif ($action === 'update') {
-            $stmt = $this->conn->prepare("UPDATE courses SET title = ?, description = ?, content = ?, category_id = ? WHERE course_id = ?");
-            $stmt->execute([$title, $description, $content, $category, $courseId]);
-        }
-    }
-
     public function manageCategory($action, $categoryId = null, $categoryName = null) {
         if ($action === 'delete') {
             $stmt = $this->conn->prepare("DELETE FROM categories WHERE category_id = ?");
@@ -75,40 +81,5 @@ class Admin extends User {
         }
     }
 
-    // Accès à des statistiques globales
-    public function getGlobalStatistics() {
-        // Total number of courses
-        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM courses");
-        $stmt->execute();
-        $totalCourses = $stmt->fetchColumn();
-
-        // Courses by category
-        $stmt = $this->conn->prepare("SELECT categories.name, COUNT(*) FROM courses 
-                                      JOIN categories ON courses.category_id = categories.category_id
-                                      GROUP BY categories.name");
-        $stmt->execute();
-        $coursesByCategory = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Course with the most students
-        $stmt = $this->conn->prepare("SELECT courses.title, COUNT(*) AS num_students FROM courses 
-                                      JOIN course_students ON courses.course_id = course_students.course_id
-                                      GROUP BY courses.title ORDER BY num_students DESC LIMIT 1");
-        $stmt->execute();
-        $courseWithMostStudents = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Top 3 teachers
-        $stmt = $this->conn->prepare("SELECT users.username, COUNT(*) AS num_courses FROM courses 
-                                      JOIN users ON courses.teacher_id = users.user_id
-                                      GROUP BY users.username ORDER BY num_courses DESC LIMIT 3");
-        $stmt->execute();
-        $topTeachers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        return [
-            'total_courses' => $totalCourses,
-            'courses_by_category' => $coursesByCategory,
-            'course_with_most_students' => $courseWithMostStudents,
-            'top_teachers' => $topTeachers
-        ];
-    }
 }
 ?>
