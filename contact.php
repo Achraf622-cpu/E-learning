@@ -10,13 +10,13 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-r from-green-700 via-green-600 to-green-500 text-white">
-
 <!-- Navbar -->
 <nav class="bg-green-900 p-4 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">
         <a href="index.php" class="text-2xl font-bold text-white">Youdemy</a>
         <ul class="flex space-x-6">
             <li><a href="home.php" class="text-white hover:text-gray-300">Home</a></li>
+            <li><a href="./Profile/verification.php" class="text-white hover:text-green-100">Profile</a></li>
             <li><a href="index.php" class="text-white hover:text-green-100">Courses</a></li>
             <li><a href="about.php" class="text-white hover:text-gray-300">About</a></li>
             <li><a href="contact.php" class="text-white hover:text-gray-300">Contact</a></li>

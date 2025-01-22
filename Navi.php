@@ -18,6 +18,7 @@
                 <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Profile</a></li>
                 <li><a href="index.php" class="text-white hover:text-green-100">Courses</a></li>
                 <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Home</a></li>
+                <li><a href="./Profile/verification.php" class="text-white hover:text-green-100">Profile</a></li>
                 <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Navigate Tags</a></li>
             </ul>
 
