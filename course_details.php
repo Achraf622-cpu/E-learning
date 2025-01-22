@@ -7,12 +7,15 @@ $conn = new Connection();
 $course = new Course($conn);
 $course_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $courseDetails = $course->getCourseDetails($course_id);
+
 if (!$courseDetails) {
     echo "Course not found!";
     exit;
 }
+
 $user_role = $_SESSION['role'] ?? null;
 $user_id = $_SESSION['user_id'] ?? null;
+
 // Check subscription status for students
 $isSubscribed = false;
 if ($user_role === 'student' && $user_id) {
@@ -49,26 +52,29 @@ if ($user_role === 'student' && $user_id) {
         <p class="text-gray-600 mb-4"><?php echo htmlspecialchars($courseDetails['content']); ?></p>
         <p class="text-gray-500 mb-4">By: <?php echo htmlspecialchars($courseDetails['author']); ?></p>
         <p class="text-gray-400 mb-4">Published on: <?php echo date('F j, Y', strtotime($courseDetails['date'])); ?></p>
-        <!-- Show PDF link if a file is available and user is subscribed -->
-        <?php if (!empty($courseDetails['file']) && $isSubscribed): ?>
-            <a href="<?php echo htmlspecialchars($courseDetails['file']); ?>" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                Download Course Material (PDF)
-            </a>
-        <?php elseif (!empty($courseDetails['file']) && !$isSubscribed): ?>
-            <p class="text-red-500 font-semibold">Subscribe to access the course material.</p>
-        <?php endif; ?>
-        <!-- Subscription button for students -->
-        <?php if ($user_role === 'student' && !$isSubscribed): ?>
-            <form action="subscribe.php" method="POST" class="mt-4">
-                <input type="hidden" name="course_id" value="<?php echo htmlspecialchars($course_id); ?>">
-                <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                    Subscribe
-                </button>
-            </form>
-        <?php elseif ($user_role === 'student' && $isSubscribed): ?>
+        
+        <!-- Subscription and file access logic -->
+        <?php if ($isSubscribed): ?>
+            <?php if (!empty($courseDetails['file'])): ?>
+                <a href="<?php echo htmlspecialchars($courseDetails['file']); ?>" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                    Download Course Material (PDF/Video)
+                </a>
+            <?php else: ?>
+                <p class="text-yellow-500 font-semibold">No downloadable material is available for this course.</p>
+            <?php endif; ?>
             <p class="text-green-600 font-semibold mt-4">You are subscribed to this course. Enjoy learning!</p>
         <?php else: ?>
-            <p class="mt-4 text-gray-500">Log in as a student to subscribe to this course.</p>
+            <p class="text-red-500 font-semibold">Subscribe to access the course material.</p>
+            <?php if ($user_role === 'student'): ?>
+                <form action="subscribe.php" method="POST" class="mt-4">
+                    <input type="hidden" name="course_id" value="<?php echo htmlspecialchars($course_id); ?>">
+                    <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                        Subscribe
+                    </button>
+                </form>
+            <?php else: ?>
+                <p class="mt-4 text-gray-500">Log in as a student to subscribe to this course.</p>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
