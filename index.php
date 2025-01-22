@@ -2,17 +2,12 @@
 require './conexions/connect.php';
 require './Profile/course.php';
 session_start();
-
 $conn = new Connection();
 $course = new Course($conn);
-
 $user_role = $_SESSION['role'] ?? null;
-
-
 $limit = 6;
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
-
 $total_courses = $course->getTotalCourses();
 $total_pages = ceil($total_courses / $limit);
 $courses = $course->getAllCourses($limit, $offset);
@@ -26,7 +21,6 @@ $courses = $course->getAllCourses($limit, $offset);
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-r from-green-200 via-white to-green-300 text-gray-900">
-
 <nav class="bg-green-500 p-4 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">
         <a href="index.php" class="text-2xl font-bold text-white">YouDemy</a>
@@ -39,7 +33,6 @@ $courses = $course->getAllCourses($limit, $offset);
         </ul>
     </div>
 </nav>
-
 <div class="min-h-screen p-8">
     <h1 class="text-5xl font-extrabold text-green-700 mb-10 text-center">Courses</h1>
 
@@ -105,6 +98,5 @@ $courses = $course->getAllCourses($limit, $offset);
         <?php endif; ?>
     </div>
 </div>
-
 </body>
 </html>
