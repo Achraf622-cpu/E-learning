@@ -8,7 +8,6 @@ session_start();
 //     header('Location: login.php');
 //     exit();
 // }
-
 $conn = new Connection();
 $enseignant_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
