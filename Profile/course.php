@@ -106,13 +106,20 @@ class Course {
     }
     
     public function getCourseDetails($course_id) {
-        // Prepare query to fetch course details
-        $stmt = $this->db->prepare("SELECT courses.id, courses.title, courses.content, courses.image, courses.date, courses.file, users.username AS author
-                                      FROM courses
-                                      JOIN users ON users.id = courses.enseignant_id
-                                      WHERE courses.id = ?");
-        $course = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $course ? $course : null;
+        $stmt = $this->db->prepare("
+            SELECT courses.id, courses.title, courses.content, courses.image, courses.date, users.username AS author
+            FROM courses
+            JOIN users ON users.id = courses.enseignant_id
+            WHERE courses.id = ?
+        ");
+        $stmt->execute([$course_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC); // Fetch a single course
+    }
+    
+    public function checkSubscription($course_id, $user_id) {
+        $stmt = $this->db->prepare("SELECT * FROM student_courses WHERE course_id = ? AND user_id = ? AND active = 1");
+        $stmt->execute([$course_id, $user_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
     }
 
 }
