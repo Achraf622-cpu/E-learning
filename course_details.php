@@ -48,19 +48,19 @@ if ($user_role === 'student' && $user_id) {
 <div class="min-h-screen p-8">
     <h1 class="text-4xl font-extrabold text-green-700 mb-8"><?php echo htmlspecialchars($courseDetails['title']); ?></h1>
     <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
-        <img src="<?php echo htmlspecialchars($courseDetails['image']); ?>" alt="img/pdf.png" class="w-full h-48 object-cover rounded-md mb-4">
+        <img src="<?php echo htmlspecialchars($courseDetails['image']); ?>" alt="Course Image" class="w-full h-48 object-cover rounded-md mb-4">
         <p class="text-gray-600 mb-4"><?php echo htmlspecialchars($courseDetails['content']); ?></p>
         <p class="text-gray-500 mb-4">By: <?php echo htmlspecialchars($courseDetails['author']); ?></p>
         <p class="text-gray-400 mb-4">Published on: <?php echo date('F j, Y', strtotime($courseDetails['date'])); ?></p>
-        
-        <!-- Subscription and file access logic -->
+
+        <!-- Show PDF/Video download link if user is subscribed -->
         <?php if ($isSubscribed): ?>
             <?php if (!empty($courseDetails['file'])): ?>
-                <a href="<?php echo htmlspecialchars($courseDetails['file']); ?>" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                <a href="<?php echo htmlspecialchars($courseDetails['file']); ?>" download class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
                     Download Course Material (PDF/Video)
                 </a>
             <?php else: ?>
-                <p class="text-yellow-500 font-semibold">No downloadable material is available for this course.</p>
+                <p class="text-yellow-500 font-semibold">No downloadable material is associated with this course.</p>
             <?php endif; ?>
             <p class="text-green-600 font-semibold mt-4">You are subscribed to this course. Enjoy learning!</p>
         <?php else: ?>
