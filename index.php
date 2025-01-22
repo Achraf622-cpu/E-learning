@@ -25,8 +25,8 @@ $courses = $course->getAllCourses($limit, $offset);
     <div class="container mx-auto flex justify-between items-center">
         <a href="index.php" class="text-2xl font-bold text-white">YouDemy</a>
         <ul class="flex space-x-6">
-            <li><a href="index.php" class="text-white hover:text-green-100">Home</a></li>
-            <li><a href="courses.php" class="text-white hover:text-green-100">Courses</a></li>
+            <li><a href="home.php" class="text-white hover:text-green-100">Home</a></li>
+            <li><a href="index.php" class="text-white hover:text-green-100">Courses</a></li>
             <li><a href="./Profile/verification.php" class="text-white hover:text-green-100">Profile</a></li>
             <li><a href="about.php" class="text-white hover:text-green-100">About</a></li>
             <li><a href="contact.php" class="text-white hover:text-green-100">Contact</a></li>

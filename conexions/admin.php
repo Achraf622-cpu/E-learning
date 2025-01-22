@@ -1,5 +1,5 @@
 <?php
-require_once 'Human.php';
+require_once 'User.php';
 
 class Admin extends User {
     private $conn;

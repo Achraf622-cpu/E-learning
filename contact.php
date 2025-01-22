@@ -16,7 +16,8 @@
     <div class="container mx-auto flex justify-between items-center">
         <a href="index.php" class="text-2xl font-bold text-white">Youdemy</a>
         <ul class="flex space-x-6">
-            <li><a href="index.php" class="text-white hover:text-gray-300">Home</a></li>
+            <li><a href="home.php" class="text-white hover:text-gray-300">Home</a></li>
+            <li><a href="index.php" class="text-white hover:text-green-100">Courses</a></li>
             <li><a href="about.php" class="text-white hover:text-gray-300">About</a></li>
             <li><a href="contact.php" class="text-white hover:text-gray-300">Contact</a></li>
         </ul>

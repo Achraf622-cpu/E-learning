@@ -4,11 +4,10 @@ require '../conexions/admin.php';
 
 session_start();
 
-// Verify the admin role
-// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-//     header("Location: ../conexions/login.php");
-//     exit;
-// }
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../conexions/login.php");
+    exit;
+}
 $conn = new Connection();
 // Initialize the Admin class with the provided PDO connection
 $admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);

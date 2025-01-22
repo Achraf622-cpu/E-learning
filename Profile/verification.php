@@ -13,11 +13,6 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
     header("Location: ../conexions/login.php");
     exit;
 }
-
-// Debugging session data (optional, can be removed in production)
-echo "User ID: " . $_SESSION['user_id'] . "<br>";
-echo "Role: " . $_SESSION['role'] . "<br>";
-
 // Redirect based on role
 switch ($_SESSION['role']) {
     case 'admin':

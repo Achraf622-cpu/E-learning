@@ -6,7 +6,7 @@ require '../conexions/admin.php'; // Assuming you have a Connection class for PD
 
 $conn = new Connection();
 
-// Initialize Admin
+
 $admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);
 
 // Fetch total statistics

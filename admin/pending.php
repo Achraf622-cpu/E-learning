@@ -1,23 +1,18 @@
 <?php
 require '../conexions/connect.php';
 require '../conexions/admin.php';
-
 session_start();
-
 $conn = new Connection();
 $admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);
-
-// Handle enseignant approval actions
 if (isset($_GET['approve'])) {
     $request_id = intval($_GET['approve']);
-    $admin->validateTeacherAccount($request_id); // Approve the enseignant request
+    $admin->validateTeacherAccount($request_id);
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
 if (isset($_GET['reject'])) {
     $request_id = intval($_GET['reject']);
-    $admin->rejectTeacherAccount($request_id); // Reject the enseignant request
+    $admin->rejectTeacherAccount($request_id);
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -48,20 +43,17 @@ if (isset($_GET['reject'])) {
             <a href="../conexions/logout.php" class="block text-red-500 hover:text-red-700 transition duration-300">Logout</a>
         </div>
     </aside>
-
     <!-- Main Content -->
     <main class="w-3/4 p-8 bg-gradient-to-br from-white via-green-100 to-green-200 shadow-lg">
         <div class="text-center mb-10">
             <h1 class="text-5xl font-extrabold text-green-600 mb-4">Manage Enseignant Approvals</h1>
             <p class="text-lg text-gray-600">Approve or reject enseignant requests</p>
         </div>
-
         <!-- Enseignant Approval Requests -->
         <div class="grid grid-cols-1 gap-6">
             <?php
             // Fetch all pending approval requests
             $requests = $admin->getPendingApprovalRequests();
-
             if ($requests) {
                 foreach ($requests as $request) {
                     ?>
@@ -69,14 +61,12 @@ if (isset($_GET['reject'])) {
                         <h3 class="text-2xl font-bold text-green-600 mb-2"><?php echo htmlspecialchars($request['username']); ?></h3>
                         <p class="text-gray-700 mb-2">Email: <?php echo htmlspecialchars($request['email']); ?></p>
                         <p class="text-gray-600 mb-4">Request Status: <?php echo htmlspecialchars($request['status']); ?></p>
-
                         <div class="flex space-x-4 mt-4">
                             <!-- Approve Button -->
                             <a href="?approve=<?php echo $request['id']; ?>"
                                class="bg-green-500 hover:bg-green-600 text-white text-sm py-2 px-4 rounded-md transition duration-300">
                                 Approve
                             </a>
-
                             <!-- Reject Button -->
                             <a href="?reject=<?php echo $request['id']; ?>"
                                class="bg-red-500 hover:bg-red-600 text-white text-sm py-2 px-4 rounded-md transition duration-300"
@@ -94,6 +84,5 @@ if (isset($_GET['reject'])) {
         </div>
     </main>
 </div>
-
 </body>
 </html>

@@ -1,13 +1,12 @@
 <?php
 require '../conexions/connect.php'; // Ensure this file returns a valid PDO connection.
-require_once '../conexions/Admin.php'; // Include the Admin class file
+require_once '../conexions/admin.php'; // Include the Admin class file
 session_start();
 
-// Ensure only admins can access this page
-// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-//     header("Location: ../conexions/login.php");
-//     exit;
-// }
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../conexions/login.php");
+    exit;
+}
 $conn = new Connection();
 
 $admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);

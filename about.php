@@ -16,6 +16,7 @@
         <a href="index.php" class="text-2xl font-bold text-blue-400">My Blog</a>
         <ul class="flex space-x-6">
             <li><a href="index.php" class="text-white hover:text-blue-400">Home</a></li>
+            <li><a href="index.php" class="text-white hover:text-green-100">Courses</a></li>
             <li><a href="about.php" class="text-white hover:text-blue-400">About</a></li>
             <li><a href="contact.php" class="text-white hover:text-blue-400">Contact</a></li>
         </ul>
@@ -35,19 +36,19 @@
         <div class="grid grid-cols-3 gap-6">
 
             <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <img src="./uploads/Clown.png" alt="Team Member" class="w-full h-40 object-cover rounded-md mb-4">
+                <img src="./img/Clown.png" alt="Team Member" class="w-full h-40 object-cover rounded-md mb-4">
                 <h3 class="text-xl font-bold text-blue-400">Achraf Hanzaz</h3>
                 <p class="text-gray-300">Tech Writer passionate about web development and innovative solutions.</p>
             </div>
 
             <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <img src="./uploads/6515304fad203_chatgpt.jpeg" alt="Team Member" class="w-full h-40 object-cover rounded-md mb-4">
+                <img src="./img/6515304fad203_chatgpt.jpeg" alt="Team Member" class="w-full h-40 object-cover rounded-md mb-4">
                 <h3 class="text-xl font-bold text-blue-400">ChatGPT</h3>
                 <p class="text-gray-300">Our Go-To when you lose hope and the reason to live. Last minute save as always comming strong everytime.</p>
             </div>
 
             <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <img src="./uploads/claude-ai9117.logowik.com.jpg" alt="Team Member" class="w-full h-40 object-cover rounded-md mb-4">
+                <img src="./img/claude-ai9117.logowik.com.jpg" alt="Team Member" class="w-full h-40 object-cover rounded-md mb-4">
                 <h3 class="text-xl font-bold text-blue-400">Claude AI</h3>
                 <p class="text-gray-300">Every one needs support even the Chat so Claude is always here to give support.</p>
             </div>

@@ -4,10 +4,10 @@ require 'course.php';
 
 session_start();
 
-// if (!isset($_SESSION['enseignant_id'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+if (!isset($_SESSION['enseignant_id'])) {
+    header('Location: login.php');
+    exit();
+}
 $conn = new Connection();
 $enseignant_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];

@@ -1,5 +1,4 @@
 <?php
-
 class Course {
     private $db;
 
@@ -115,7 +114,7 @@ class Course {
         $stmt->execute([$course_id]);
         return $stmt->fetch(PDO::FETCH_ASSOC); // Fetch a single course
     }
-    
+
     public function checkSubscription($course_id, $user_id) {
         $stmt = $this->db->prepare("SELECT * FROM student_courses WHERE course_id = ? AND user_id = ? AND active = 1");
         $stmt->execute([$course_id, $user_id]);

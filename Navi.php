@@ -16,6 +16,7 @@
             <h2 class="text-3xl font-extrabold text-blue-400 mb-6">User Menu</h2>
             <ul class="space-y-6">
                 <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Profile</a></li>
+                <li><a href="index.php" class="text-white hover:text-green-100">Courses</a></li>
                 <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Home</a></li>
                 <li><a href="#" class="block text-white hover:text-blue-400 transition duration-300">Navigate Tags</a></li>
             </ul>

@@ -1,8 +1,6 @@
-
 <?php
 class Connection {
     protected $conn;
-
     public function __construct() {
         $host = 'localhost';
         $dbname = 'elearn';
@@ -19,23 +17,16 @@ class Connection {
             die("Connection failed: " . $e->getMessage());
         }
     }
-
-    // Getter for the PDO instance
     public function getConnection() {
         return $this->conn;
     }
-
-    // You can optionally expose query() or prepare() methods as well
     public function query($sql) {
         return $this->conn->query($sql);
     }
-
     public function prepare($sql) {
         return $this->conn->prepare($sql);
     }
 }
-
-
 ?>
 
 

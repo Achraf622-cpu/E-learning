@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unsubscribe_course_id
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

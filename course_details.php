@@ -2,21 +2,16 @@
 require './conexions/connect.php';
 require './Profile/course.php';
 session_start();
-
 $conn = new Connection();
 $course = new Course($conn);
 $course_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $courseDetails = $course->getCourseDetails($course_id);
-
 if (!$courseDetails) {
     echo "Course not found!";
     exit;
 }
-
 $user_role = $_SESSION['role'] ?? null;
 $user_id = $_SESSION['user_id'] ?? null;
-
-// Check subscription status for students
 $isSubscribed = false;
 if ($user_role === 'student' && $user_id) {
     $stmt = $conn->getConnection()->prepare("SELECT active FROM student_courses WHERE student_id = :student_id AND course_id = :course_id AND active = TRUE");
