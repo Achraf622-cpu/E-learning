@@ -14,10 +14,8 @@ if (isset($_GET['delete_course'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-// Filtering and sorting logic
 $filter_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : '';
 $sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'recent';
-// Fetch courses using Admin class method
 $courses = $admin->getCourses($filter_date, $sort_order);
 ?>
 <!DOCTYPE html>
@@ -113,10 +111,9 @@ $courses = $admin->getCourses($filter_date, $sort_order);
                 foreach ($courses as $row) {
                     ?>
                     <div class="card p-6 rounded-lg">
-                        <img src="<?php echo htmlspecialchars($row['img']); ?>" alt="Course Thumbnail" class="w-full h-40 object-cover rounded-md mb-4">
-                        <h3 class="text-2xl font-bold text-green-600 mb-2"><?php echo htmlspecialchars($row['titre']); ?></h3>
-                        <p class="text-gray-600 mb-4"><?php echo htmlspecialchars(substr($row['para'], 0, 100)) . '...'; ?></p>
-                        <p class="text-gray-500 text-sm mb-4">By: <?php echo htmlspecialchars($row['author']); ?></p>
+                        <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="Course Thumbnail" class="w-full h-40 object-cover rounded-md mb-4">
+                        <h3 class="text-2xl font-bold text-green-600 mb-2"><?php echo htmlspecialchars($row['title']); ?></h3>
+                        <p class="text-gray-600 mb-4"><?php echo htmlspecialchars(substr($row['content'], 0, 100)) . '...'; ?></p>
                         <p class="text-gray-500 text-sm mb-4">Published on: <?php echo htmlspecialchars($row['date']); ?></p>
                         <div class="flex justify-end">
                             <a href="?delete_course=<?php echo $row['id']; ?>" class="button-mint text-white py-2 px-4 rounded-md"

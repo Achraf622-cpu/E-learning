@@ -43,7 +43,15 @@ if ($user_role === 'student' && $user_id) {
 <div class="min-h-screen p-8">
     <h1 class="text-4xl font-extrabold text-green-700 mb-8"><?php echo htmlspecialchars($courseDetails['title']); ?></h1>
     <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
-        <img src="<?php echo htmlspecialchars($courseDetails['image']); ?>" alt="Course Image" class="w-full h-48 object-cover rounded-md mb-4">
+    <img src="<?php 
+    if (in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+        echo 'img/Structure-of-Online-Courses.png';  // Default image for images
+    } else if (in_array($file_extension, ['pdf', 'mp4', 'avi', 'mkv', 'mov'])) {
+        echo 'img/pdf.png';  // Image for PDF and video files
+    } else {
+        echo 'img/default.png';  // Default image for unknown file types
+    }
+?>" alt="Course Image" class="w-full h-48 object-cover rounded-md mb-4">
         <p class="text-gray-600 mb-4"><?php echo htmlspecialchars($courseDetails['content']); ?></p>
         <p class="text-gray-500 mb-4">By: <?php echo htmlspecialchars($courseDetails['author']); ?></p>
         <p class="text-gray-400 mb-4">Published on: <?php echo date('F j, Y', strtotime($courseDetails['date'])); ?></p>
@@ -73,5 +81,7 @@ if ($user_role === 'student' && $user_id) {
         <?php endif; ?>
     </div>
 </div>
+
+<iframe src="http://localhost:3000/uploads/Ordre%20de%20passage%20SC%201%20A1%20YouCode%20Safi.pdf" title="description"></iframe>
 </body>
 </html>

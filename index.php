@@ -100,3 +100,11 @@ $courses = $course->getAllCourses($limit, $offset);
 </div>
 </body>
 </html>
+if (in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        $imageSrc = htmlspecialchars($course['image']);
+                    } else {
+                        $imageSrc = 'img/pdf.png';
+                    }
+                } else {
+                    $imageSrc = 'path/to/placeholder-image.png';
+                }

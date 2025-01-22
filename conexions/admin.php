@@ -85,20 +85,31 @@ class Admin extends User {
     }
 
     public function deleteCourse($courseId) {
+        // Deleting the course and related data
         $stmt = $this->conn->prepare("DELETE FROM courses WHERE id = ?");
         $stmt->execute([$courseId]);
     }
 
     public function getCourses($filter_date = '', $sort_order = 'recent') {
         $query = "SELECT * FROM courses";
+        $conditions = [];
+        // Add date filter condition
         if (!empty($filter_date)) {
-            $query .= " WHERE date >= :filter_date";
+            $conditions[] = "DATE(date) = :filter_date";  // Adjusted to handle date filtering
         }
+        // Sorting by order
         if ($sort_order === 'recent') {
-            $query .= " ORDER BY date DESC";
+            $order = "ORDER BY date DESC";
         } else {
-            $query .= " ORDER BY date ASC";
+            $order = "ORDER BY date ASC";
         }
+
+        if (count($conditions) > 0) {
+            $query .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        $query .= " $order";
+        
         $stmt = $this->conn->prepare($query);
         if (!empty($filter_date)) {
             $stmt->bindParam(':filter_date', $filter_date);
@@ -131,5 +142,6 @@ class Admin extends User {
         );
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 }
 ?>
