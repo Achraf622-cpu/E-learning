@@ -1,10 +1,8 @@
 <?php
 // Etudiant.php
 require_once 'User.php';  // Assuming User is your abstract parent class
-
 class Etudiant extends User {
     private $conn;
-
     public function __construct($id, $name, $email, $conn) {
         $this->conn = $conn;
         $this->user_id = $id;
@@ -62,16 +60,13 @@ class Etudiant extends User {
             return "You are already enrolled in this course.";
         }
     }
-
-    // Accès à une section "Mes cours" regroupant les cours rejoints
     public function myCourses() {
-        // Get all courses the student is enrolled in
         $stmt = $this->conn->prepare("SELECT courses.course_id, courses.title, courses.description 
                                       FROM courses 
                                       JOIN course_students ON courses.course_id = course_students.course_id
                                       WHERE course_students.student_id = ?");
         $stmt->execute([$this->user_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);  // Return enrolled courses as an array
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

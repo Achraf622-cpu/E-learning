@@ -1,33 +1,25 @@
 <?php
-require '../conexions/connect.php'; // Ensure this file returns a valid PDO connection.
-require_once '../conexions/admin.php'; // Include the Admin class file
+require '../conexions/connect.php';
+require_once '../conexions/admin.php'; 
 session_start();
-
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../conexions/login.php");
     exit;
 }
 $conn = new Connection();
-
 $admin = new Admin($_SESSION['user_id'], $_SESSION['username'], $conn);
-
-
 if (isset($_GET['delete_course'])) { 
     $course_id = intval($_GET['delete_course']); 
     $admin->deleteCourse($course_id); // Use Admin class method for deletion
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
 // Filtering and sorting logic
 $filter_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : '';
 $sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'recent';
-
 // Fetch courses using Admin class method
 $courses = $admin->getCourses($filter_date, $sort_order);
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,9 +64,7 @@ $courses = $admin->getCourses($filter_date, $sort_order);
     </style>
 </head>
 <body class="text-gray-900">
-
 <div class="flex min-h-screen">
-
     <!-- Sidebar -->
     <aside class="w-1/4 bg-white p-6 shadow-md border-r border-green-300">
         <h2 class="text-3xl font-extrabold text-green-600 mb-6">Admin Panel</h2>
@@ -89,14 +79,12 @@ $courses = $admin->getCourses($filter_date, $sort_order);
             <a href="../conexions/logout.php" class="block text-red-500 hover:text-red-700 transition duration-300">Logout</a>
         </div>
     </aside>
-
     <!-- Main Content -->
     <main class="w-3/4 p-8 bg-gradient-to-br from-white via-green-100 to-green-200 shadow-lg">
         <div class="text-center mb-10">
             <h1 class="text-5xl font-extrabold text-green-600 mb-4">Manage Courses</h1>
             <p class="text-lg text-gray-700">View, filter, and manage courses</p>
         </div>
-
         <!-- Filters -->
         <form method="GET" class="mb-8 text-center flex items-center justify-center gap-4">
             <div>
@@ -117,7 +105,6 @@ $courses = $admin->getCourses($filter_date, $sort_order);
                 </button>
             </div>
         </form>
-
         <!-- Course List -->
         <div class="grid grid-cols-3 gap-6">
             <?php

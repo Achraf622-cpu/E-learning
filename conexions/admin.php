@@ -1,6 +1,5 @@
 <?php
 require_once 'User.php';
-
 class Admin extends User {
     private $conn;
 
@@ -92,23 +91,18 @@ class Admin extends User {
 
     public function getCourses($filter_date = '', $sort_order = 'recent') {
         $query = "SELECT * FROM courses";
-
         if (!empty($filter_date)) {
             $query .= " WHERE date >= :filter_date";
         }
-
         if ($sort_order === 'recent') {
             $query .= " ORDER BY date DESC";
         } else {
             $query .= " ORDER BY date ASC";
         }
-
         $stmt = $this->conn->prepare($query);
-
         if (!empty($filter_date)) {
             $stmt->bindParam(':filter_date', $filter_date);
         }
-
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -128,7 +122,6 @@ class Admin extends User {
         $stmt = $this->conn->query("SELECT COUNT(*) FROM courses");
         return $stmt->fetchColumn();
     }
-
     public function getPendingApprovalRequests() {
         $stmt = $this->conn->query(
             "SELECT ar.id, u.username, u.email, ar.created_at 
