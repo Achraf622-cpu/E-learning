@@ -43,29 +43,48 @@ if ($user_role === 'student' && $user_id) {
 <div class="min-h-screen p-8">
     <h1 class="text-4xl font-extrabold text-green-700 mb-8"><?php echo htmlspecialchars($courseDetails['title']); ?></h1>
     <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
-    <img src="<?php 
-    if (in_array($file_extension, ['jpg', 'jpeg', 'png', 'gif'])) {
-        echo 'img/Structure-of-Online-Courses.png';  // Default image for images
-    } else if (in_array($file_extension, ['pdf', 'mp4', 'avi', 'mkv', 'mov'])) {
-        echo 'img/pdf.png';  // Image for PDF and video files
-    } else {
-        echo 'img/default.png';  // Default image for unknown file types
-    }
-?>" alt="Course Image" class="w-full h-48 object-cover rounded-md mb-4">
+        <?php
+        $filePath = $courseDetails['image'] ?? null;
+
+        if ($filePath) {
+            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+            if (in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif'])) {
+                // Display image directly
+                echo '<img src="' . htmlspecialchars($filePath) . '" alt="Course Image" class="w-full h-48 object-cover rounded-md mb-4">';
+            } elseif (in_array(strtolower($fileExtension), ['pdf', 'mp4', 'avi', 'mkv', 'mov'])) {
+                // Display PDF or video placeholder image
+                echo '<img src="img/pdf.png" alt="Course Material" class="w-full h-48 object-cover rounded-md mb-4">';
+            } else {
+                // Default placeholder image
+                echo '<img src="img/default.png" alt="Default Image" class="w-full h-48 object-cover rounded-md mb-4">';
+            }
+        } else {
+            echo '<img src="img/default.png" alt="Default Image" class="w-full h-48 object-cover rounded-md mb-4">';
+        }
+        ?>
         <p class="text-gray-600 mb-4"><?php echo htmlspecialchars($courseDetails['content']); ?></p>
         <p class="text-gray-500 mb-4">By: <?php echo htmlspecialchars($courseDetails['author']); ?></p>
         <p class="text-gray-400 mb-4">Published on: <?php echo date('F j, Y', strtotime($courseDetails['date'])); ?></p>
 
-        <!-- Show PDF/Video download link if user is subscribed -->
+        <!-- Show PDF/Video material in an iframe if subscribed -->
         <?php if ($isSubscribed): ?>
-            <?php if (!empty($courseDetails['file'])): ?>
-                <a href="<?php echo htmlspecialchars($courseDetails['file']); ?>" download class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                    Download Course Material (PDF/Video)
-                </a>
+            <?php if ($filePath): ?>
+                <?php
+                $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+                if (in_array(strtolower($fileExtension), ['pdf', 'mp4', 'avi', 'mkv', 'mov'])) {
+                    // Show PDF/Video in an iframe
+                    echo '<iframe src="' . htmlspecialchars($filePath) . '" class="w-full h-96 mt-4" title="Course Material"></iframe>';
+                } else {
+                    // Show download link for other file types
+                    echo '<a href="' . htmlspecialchars($filePath) . '" download class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                            Download Course Material
+                          </a>';
+                }
+                ?>
+                <p class="text-green-600 font-semibold mt-4">You are subscribed to this course. Enjoy learning!</p>
             <?php else: ?>
                 <p class="text-yellow-500 font-semibold">No downloadable material is associated with this course.</p>
             <?php endif; ?>
-            <p class="text-green-600 font-semibold mt-4">You are subscribed to this course. Enjoy learning!</p>
         <?php else: ?>
             <p class="text-red-500 font-semibold">Subscribe to access the course material.</p>
             <?php if ($user_role === 'student'): ?>
@@ -81,7 +100,5 @@ if ($user_role === 'student' && $user_id) {
         <?php endif; ?>
     </div>
 </div>
-
-<iframe src="http://localhost:3000/uploads/Ordre%20de%20passage%20SC%201%20A1%20YouCode%20Safi.pdf" title="description"></iframe>
 </body>
 </html>
